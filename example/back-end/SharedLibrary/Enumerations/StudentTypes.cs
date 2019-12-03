@@ -1,4 +1,4 @@
-﻿namespace ApiBackEnd.Enumerations
+﻿namespace SharedLibrary.Enumerations
 {
     public enum StudentTypes
     {

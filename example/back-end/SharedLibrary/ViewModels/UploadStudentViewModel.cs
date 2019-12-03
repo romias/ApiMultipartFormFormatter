@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ApiBackEnd.Enumerations;
+using SharedLibrary.Enumerations;
 
-namespace ApiBackEnd.ViewModels
+namespace SharedLibrary.ViewModels
 {
     public class UploadStudentViewModel
     {

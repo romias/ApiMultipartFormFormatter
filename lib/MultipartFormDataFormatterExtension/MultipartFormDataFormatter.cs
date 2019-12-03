@@ -1,27 +1,29 @@
 ﻿#if NETFRAMEWORK
 using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+
 #elif NETSTANDARD
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 #endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using System.Web.Http;
 using MultipartFormDataFormatterExtension.Extensions;
 using MultipartFormDataFormatterExtension.Models;
 using MultipartFormDataFormatterExtension.Services.Implementations;
 using MultipartFormDataFormatterExtension.Services.Interfaces;
-
-
-using System.Net.Http;
-using System.Net.Http.Formatting;
 
 
 namespace MultipartFormDataFormatterExtension
@@ -93,133 +95,86 @@ namespace MultipartFormDataFormatterExtension
         }
 #endif
 
-
 #if NETFRAMEWORK
         /// <summary>
         ///     Read data from incoming stream.
         /// </summary>
-        public override async Task<object> ReadFromStreamAsync(Type type, Stream stream, HttpContent content, IFormatterLogger logger)
-#elif NETSTANDARD
-        /// <summary>
-        ///     Read data from incoming stream.
-        /// </summary>
-        public async Task<InputFormatterResult> ReadRequestBodyAsync1(InputFormatterContext context)
-#endif
+        /// <param name="type"></param>
+        /// <param name="stream"></param>
+        /// <param name="content"></param>
+        /// <param name="formatterLogger"></param>
+        /// <returns></returns>
+        public override async Task<object> ReadFromStreamAsync(Type type, Stream stream, HttpContent content,
+            IFormatterLogger formatterLogger)
         {
-#if NETSTANDARD
-            var type = context.ModelType;
-#endif
             // Type is invalid.
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-#if NETFRAMEWORK
             // Stream is invalid.
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-#endif
 
-            List<IMultiPartFormDataModelBinderService> multipartFormDataModelBinderServices = null;
-
-#if NETFRAMEWORK
             // Find dependency resolver.
             var dependencyResolver = GlobalConfiguration.Configuration.DependencyResolver;
             if (dependencyResolver == null)
                 throw new ArgumentException("Dependency resolver is required.");
 
-             // load multipart data into memory 
+            var multipartFormDataModelBinderServices =
+                dependencyResolver.GetServices(typeof(IMultiPartFormDataModelBinderService)) as List<IMultiPartFormDataModelBinderService>;
+
+            try
+            {
+                // load multipart data into memory 
                 var multipartProvider = await content.ReadAsMultipartAsync();
                 var httpContents = multipartProvider.Contents;
 
-#elif NETSTANDARD
-            var serviceProvider = context.HttpContext.RequestServices;
-            serviceProvider.GetServices<IMultiPartFormDataModelBinderService>();
-
-            // Get logger service.
-            var logger = serviceProvider.GetService<ILogger<MultipartFormDataFormatter>>();
-
-            // Get list of multipart form data binder service.
-            multipartFormDataModelBinderServices =
-                serviceProvider.GetServices<IMultiPartFormDataModelBinderService>()?.ToList();
-
-            // load multipart data into memory 
-            var httpContents = await context.HttpContext.Request.ReadFormAsync();
-#endif
-            try
-            {
                 // Create an instance from specific type.
                 var instance = Activator.CreateInstance(type);
-                
+
                 foreach (var httpContent in httpContents)
                 {
                     // Find parameter from content deposition.
-                    string contentParameter = null;
-
-#if NETFRAMEWORK
-                    contentParameter = httpContent.Headers.ContentDisposition.Name.Trim('"');
-#elif NETSTANDARD
-                    contentParameter = httpContent.Key.Trim();
-#endif
-
-                    var parameterParts = contentParameter
-                        .ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
+                    var contentParameter = httpContent.Headers.ContentDisposition.Name.Trim('"');
+                    var parameterParts = contentParameter.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
 
                     // Content is a parameter, not a file.
-                    var value = string.Empty;
-
-#if NETFRAMEWORK
-                    await httpContent.ReadAsStringAsync();
-#elif NETSTANDARD
-                    value = httpContent.Value.ToString();
-#endif
-                    await BuildRequestModelAsync(instance, parameterParts, value, multipartFormDataModelBinderServices);
-                }
-
-                // Content is a file.
-                // File retrieved from client-side.
-
-                // set null if no content was submitted to have support for [Required]
-                var fileContents = httpContents.Files;
-                if (fileContents != null && fileContents.Count > 0)
-                {
-                    foreach (var fileContent in fileContents)
+                    if (string.IsNullOrEmpty(httpContent.Headers.ContentDisposition.FileName))
                     {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await fileContent.CopyToAsync(memoryStream);
-
-                            var parameterParts =
-                                fileContent.Name.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
-
-                            var attachment = new HttpFile(
-                                fileContent.FileName.Trim('"'),
-                                fileContent.ContentType,
-                                memoryStream.ToArray()
-                            );
-
-                            await BuildRequestModelAsync(instance, parameterParts, attachment, multipartFormDataModelBinderServices);
-                        }
+                        var value = await httpContent.ReadAsStringAsync();
+                        await BuildRequestModelAsync(instance, parameterParts, value, multipartFormDataModelBinderServices);
+                        continue;
                     }
+
+                    // Content is a file.
+                    // File retrieved from client-side.
+                    HttpFile file;
+
+                    // set null if no content was submitted to have support for [Required]
+                    if (httpContent.Headers.ContentLength.GetValueOrDefault() > 0)
+                        file = new HttpFile(
+                            httpContent.Headers.ContentDisposition.FileName.Trim('"'),
+                            httpContent.Headers.ContentType.MediaType,
+                            await httpContent.ReadAsByteArrayAsync()
+                        );
+                    else
+                        file = null;
+
+                    await BuildRequestModelAsync(instance, parameterParts, file, multipartFormDataModelBinderServices);
                 }
 
-#if NETFRAMEWORK
                 return instance;
-#elif NETSTANDARD
-                return InputFormatterResult.Success(instance);
-#endif
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                logger.LogError(exception, exception.Message);
-                var defaultValue = GetDefaultValueForType(type);
-
-#if NETFRAMEWORK
-                return defaultValue;
-#elif NETSTANDARD
-                return InputFormatterResult.Success(defaultValue);
-#endif
+                if (formatterLogger == null)
+                    throw;
+                formatterLogger.LogError(string.Empty, e);
+                return GetDefaultValueForType(type);
             }
         }
+
+#elif NETSTANDARD
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
@@ -293,6 +248,7 @@ namespace MultipartFormDataFormatterExtension
                 return InputFormatterResult.Success(defaultValue);
             }
         }
+#endif
 
         /// <summary>
         ///     Read parameters list and bind information to model.
@@ -515,6 +471,6 @@ namespace MultipartFormDataFormatterExtension
                     .FirstOrDefault(x => name.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-#endregion
+        #endregion
     }
 }

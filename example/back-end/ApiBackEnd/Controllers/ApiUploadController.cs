@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Web.Http;
-using ApiBackEnd.ViewModels;
+using SharedLibrary.ViewModels;
 
 namespace ApiBackEnd.Controllers
 {

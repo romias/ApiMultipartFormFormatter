@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using ApiBackEnd.Models;
-using ApiMultiPartFormData.Models;
+using MultipartFormDataFormatterExtension.Models;
+using SharedLibrary.Models;
 
-namespace ApiBackEnd.ViewModels
+namespace SharedLibrary.ViewModels
 {
     public class UploadAttachmentListViewModel
     {
@@ -17,7 +16,6 @@ namespace ApiBackEnd.ViewModels
         /// <summary>
         /// List of attachments that will be uploaded to server.
         /// </summary>
-        [Required]
         public List<HttpFile> Attachments { get; set; }
 
         #endregion

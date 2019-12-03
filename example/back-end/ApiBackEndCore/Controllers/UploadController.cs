@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.ViewModels;
-using BasicUploadViewModel = SharedLibrary.ViewModels.BasicUploadViewModel;
 
 namespace ApiBackEndCore.Controllers
 {
