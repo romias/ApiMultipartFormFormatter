@@ -141,12 +141,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\MultipartFormDataFormatter\MultipartFormDataFormatter.csproj">
-      <Project>{0b7507a3-736f-4728-81d1-f7b36531bda1}</Project>
-      <Name>MultipartFormDataFormatter</Name>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

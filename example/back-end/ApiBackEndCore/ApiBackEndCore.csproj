@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\lib\MultipartFormDataFormatterExtension\MultipartFormDataFormatterExtension.csproj" />
+      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
     </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using MultipartFormDataFormatterExtension;
 using Newtonsoft.Json.Serialization;
 
@@ -28,8 +29,7 @@ namespace ApiBackEndCore
             services
                 .AddMvc(options =>
                 {
-                    var a = options.FormatterMappings.GetMediaTypeMappingForFormat("multipart/form-data");
-                    options.InputFormatters.Insert(0, new MultipartFormDataFormatter());
+                    options.InputFormatters.Add(new MultipartFormDataFormatter());
                 })
                 .AddJsonOptions(options =>
                 {
