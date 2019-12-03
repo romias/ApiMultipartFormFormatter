@@ -12,3 +12,9 @@
 /miscellaneous/multipart-formdata-my-get/packages
 /lib/MultipartFormDataFormatter/obj
 /lib/MultipartFormDataFormatter/bin
+/example/back-end/ApiBackEndCore/bin
+/example/back-end/ApiBackEndCore/obj
+/example/back-end/SharedLibrary/obj
+/example/back-end/SharedLibrary/bin
+/lib/MultipartFormDataFormatterExtension/obj
+/lib/MultipartFormDataFormatterExtension/bin

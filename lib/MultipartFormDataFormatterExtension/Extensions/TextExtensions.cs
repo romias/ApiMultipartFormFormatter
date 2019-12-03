@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -32,6 +33,14 @@ namespace MultipartFormDataFormatterExtension.Extensions
                     .ToList();
 
             return interceptor(contentDispositionName);
+        }
+
+        public static object ToEnum(this string text, Type enumType)
+        {
+            if (int.TryParse(text, out var num))
+                return Enum.ToObject(enumType, num);
+
+            return Enum.Parse(enumType, text, true);
         }
     }
 }

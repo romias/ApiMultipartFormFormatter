@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using MultipartFormDataFormatterExtension.Extensions;
 using MultipartFormDataFormatterExtension.Services.Interfaces;
 
 namespace MultipartFormDataFormatterExtension.Services.Implementations
@@ -36,12 +37,13 @@ namespace MultipartFormDataFormatterExtension.Services.Implementations
 
             // Property is Enum.
             if (propertyType.IsEnum)
-                return convertToEnum(propertyType, value.ToString());
+                return value.ToString().ToEnum(propertyType);
+
             if (underlyingType != null && underlyingType.IsEnum)
             {
                 if (string.IsNullOrWhiteSpace(value.ToString()))
                     return null;
-                return convertToEnum(underlyingType, value.ToString());
+                return value.ToString().ToEnum(underlyingType);
             }
 
             // Other Nullable types
@@ -51,15 +53,8 @@ namespace MultipartFormDataFormatterExtension.Services.Implementations
                 propertyType = underlyingType;
             }
 
+            // return NormalizeData(value, propertyType);
             return Convert.ChangeType(value, propertyType);
-        }
-
-        private object convertToEnum(Type type, string val)
-        {
-            if (int.TryParse(val, out var num))
-                return Enum.ToObject(type, num);
-
-            return Enum.Parse(type, val, true);
         }
 
         #endregion
