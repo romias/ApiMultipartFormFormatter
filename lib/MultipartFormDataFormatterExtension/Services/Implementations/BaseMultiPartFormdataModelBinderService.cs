@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Reflection;
-using MultipartFormDataFormatter.Services.Interfaces;
+using MultipartFormDataFormatterExtension.Services.Interfaces;
 
-namespace MultipartFormDataFormatter.Services.Implementations
+namespace MultipartFormDataFormatterExtension.Services.Implementations
 {
     public class BaseMultiPartFormDataModelBinderService : IMultiPartFormDataModelBinderService
     {
         #region Methods
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="propertyInfo"></param>
         /// <param name="value"></param>
@@ -54,7 +54,7 @@ namespace MultipartFormDataFormatter.Services.Implementations
             return Convert.ChangeType(value, propertyType);
         }
 
-        object convertToEnum(Type type, string val)
+        private object convertToEnum(Type type, string val)
         {
             if (int.TryParse(val, out var num))
                 return Enum.ToObject(type, num);

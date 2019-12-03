@@ -1,29 +1,22 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Formatting;
-
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.Http.Dependencies;
-using Microsoft.AspNetCore.Mvc.Formatters;
-
-using MultipartFormDataFormatter.Extensions;
-using MultipartFormDataFormatter.Models;
-using MultipartFormDataFormatter.Services.Implementations;
-using MultipartFormDataFormatter.Services.Interfaces;
-
-#if NETFRAMEWORK
+﻿#if NETFRAMEWORK
 using System.Net.Http.Headers;
 #elif NETSTANDARD
 using Microsoft.Net.Http.Headers;
 #endif
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MultipartFormDataFormatterExtension.Extensions;
+using MultipartFormDataFormatterExtension.Services.Implementations;
+using MultipartFormDataFormatterExtension.Services.Interfaces;
 
-namespace MultipartFormDataFormatter
+namespace MultipartFormDataFormatterExtension
 {
     /// <summary>
     ///     Handler for content disposition name analyzer.
@@ -179,6 +172,16 @@ namespace MultipartFormDataFormatter
             if (context.ModelType == null)
                 throw new ArgumentNullException(nameof(context.ModelType));
 
+            var serviceProvider = context.HttpContext.RequestServices;
+            serviceProvider.GetServices<IMultiPartFormDataModelBinderService>();
+
+            // Get logger service.
+            var logger = serviceProvider.GetService<ILogger<MultipartFormDataFormatter>>();
+
+            // Get list of multipart form data binder service.
+            var multipartFormDataModelBinderServices =
+                serviceProvider.GetServices<IMultiPartFormDataModelBinderService>()?.ToList();
+
             try
             {
                 // load multipart data into memory 
@@ -193,9 +196,10 @@ namespace MultipartFormDataFormatter
                     string contentParameter = null;
                     contentParameter = httpContent.Key.Trim();
 
-                    var parameterParts = contentParameter.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
-                    await BuildRequestModelAsync(instance, parameterParts, value, dependencyScope);
-                    continue;
+                    var parameterParts =
+                        contentParameter.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
+                    await BuildRequestModelAsync(instance, parameterParts, httpContent.Value,
+                        multipartFormDataModelBinderServices);
 
                     //// Content is a file.
                     //// File retrieved from client-side.
@@ -215,11 +219,13 @@ namespace MultipartFormDataFormatter
                     //await BuildRequestModelAsync(instance, parameterParts, file, dependencyScope);
                 }
 
-                return instance;
+                return InputFormatterResult.Success(instance);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                return GetDefaultValueForType(context.ModelType);
+                logger.LogError(exception, exception.Message);
+                var defaultValue = GetDefaultValueForType(context.ModelType);
+                return InputFormatterResult.Success(defaultValue);
             }
         }
 
@@ -230,7 +236,8 @@ namespace MultipartFormDataFormatter
         /// <param name="parameters"></param>
         /// <param name="value"></param>
         /// <param name="multipartFormDataModelBinderServices"></param>
-        protected async Task BuildRequestModelAsync(object model, IList<string> parameters, object value, List<IMultiPartFormDataModelBinderService> multipartFormDataModelBinderServices)
+        protected async Task BuildRequestModelAsync(object model, IList<string> parameters, object value,
+            List<IMultiPartFormDataModelBinderService> multipartFormDataModelBinderServices)
         {
             // Initiate model pointer.
             var pointer = model;
@@ -263,7 +270,7 @@ namespace MultipartFormDataFormatter
                         return;
 
                     // Current property information is not a list.
-                    if (!IsList(propertyInfo.PropertyType))
+                    if (!propertyInfo.PropertyType.IsList())
                         return;
 
                     // Find the index of parameter.
@@ -322,7 +329,7 @@ namespace MultipartFormDataFormatter
                 }
 
                 // Value is list.
-                if (IsList(propertyInfo.PropertyType))
+                if (propertyInfo.PropertyType.IsList())
                 {
                     pointer = propertyInfo.GetValue(pointer);
                     if (iNextIndex >= parameters.Count)
@@ -358,10 +365,8 @@ namespace MultipartFormDataFormatter
 
             // Model binder hasn't been called.
             if (!hasModelBinderCalled)
-            {
                 outputPropertyValue = new BaseMultiPartFormDataModelBinderService()
                     .BuildModel(propertyInfo, outputPropertyValue);
-            }
 
             return Task.FromResult(outputPropertyValue);
         }
@@ -383,7 +388,7 @@ namespace MultipartFormDataFormatter
                 return null;
 
             // Find items number in the list.
-            var itemCount = (int)itemCountProperty.GetValue(pointer, null);
+            var itemCount = (int) itemCountProperty.GetValue(pointer, null);
 
             // Get generic arguments from property.
             var genericArguments = propertyInfo.PropertyType.GetGenericArguments();
@@ -413,7 +418,7 @@ namespace MultipartFormDataFormatter
                 // Find the add method.
                 var addProperty = propertyInfo.PropertyType.GetMethod(nameof(IList.Add));
                 if (addProperty != null)
-                    addProperty.Invoke(pointer, new[] { listItem });
+                    addProperty.Invoke(pointer, new[] {listItem});
                 return listItem;
             }
 
@@ -425,7 +430,7 @@ namespace MultipartFormDataFormatter
             if (elementAtMethod != null)
             {
                 var item = elementAtMethod.MakeGenericMethod(genericArguments[0]);
-                return item.Invoke(pointer, new[] { pointer, iCollectionIndex });
+                return item.Invoke(pointer, new[] {pointer, iCollectionIndex});
             }
 
             return null;
@@ -445,19 +450,6 @@ namespace MultipartFormDataFormatter
                     .FirstOrDefault(x => name.Equals(x.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        /// <summary>
-        ///     Whether instance is a collection or not.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        protected bool IsList(Type type)
-        {
-            if (!type.IsGenericType)
-                return false;
-
-            return type.GetInterface(typeof(IEnumerable<>).FullName) != null;
-        }
-
-#endregion
+        #endregion
     }
 }

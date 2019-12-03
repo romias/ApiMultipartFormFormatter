@@ -1,4 +1,4 @@
-﻿namespace MultipartFormDataFormatter.Models
+﻿namespace MultipartFormDataFormatterExtension.Models
 {
     public class HttpFile : HttpFileBase
     {

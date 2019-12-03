@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MultipartFormDataFormatter.Models
+namespace MultipartFormDataFormatterExtension.Models
 {
     public class StreamedHttpFile : HttpFileBase
     {
@@ -14,13 +14,7 @@ namespace MultipartFormDataFormatter.Models
         /// <summary>
         ///     Length of file stream
         /// </summary>
-        public long StreamLength
-        {
-            get
-            {
-                return Stream.Length;
-            }
-        }
+        public long StreamLength => Stream.Length;
 
         #endregion
 

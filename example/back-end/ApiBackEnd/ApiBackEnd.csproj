@@ -142,9 +142,9 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\ApiMultipartFormDataFormatter\ApiMultiPartFormData.csproj">
-      <Project>{1f851995-9c6b-4b34-82af-ac4e075f00c2}</Project>
-      <Name>ApiMultiPartFormData</Name>
+    <ProjectReference Include="..\..\..\lib\MultipartFormDataFormatter\MultipartFormDataFormatter.csproj">
+      <Project>{0b7507a3-736f-4728-81d1-f7b36531bda1}</Project>
+      <Name>MultipartFormDataFormatter</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

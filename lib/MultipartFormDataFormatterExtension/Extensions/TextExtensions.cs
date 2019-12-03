@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace MultipartFormDataFormatter.Extensions
+namespace MultipartFormDataFormatterExtension.Extensions
 {
     internal static class TextExtensions
     {
@@ -20,7 +20,8 @@ namespace MultipartFormDataFormatter.Extensions
         /// <summary>
         ///     Find content disposition parameters
         /// </summary>
-        public static List<string> ToContentDispositionParameters(this string contentDispositionName, FindContentDispositionParametersHandler interceptor)
+        public static List<string> ToContentDispositionParameters(this string contentDispositionName,
+            FindContentDispositionParametersHandler interceptor)
         {
             if (interceptor == null)
                 return contentDispositionName.Replace("[", ",")

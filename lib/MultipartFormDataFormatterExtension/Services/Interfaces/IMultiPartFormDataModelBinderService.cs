@@ -1,13 +1,13 @@
 ﻿using System.Reflection;
 
-namespace MultipartFormDataFormatter.Services.Interfaces
+namespace MultipartFormDataFormatterExtension.Services.Interfaces
 {
     public interface IMultiPartFormDataModelBinderService
     {
         #region Methods
 
         /// <summary>
-        /// Build request model value from property information and value.
+        ///     Build request model value from property information and value.
         /// </summary>
         /// <param name="propertyInfo"></param>
         /// <param name="value"></param>
