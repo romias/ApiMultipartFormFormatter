@@ -1,3 +1,0 @@
-* Pack the package: 
-nuget pack ApiMultiPartFormData.csproj -Properties OutputDirectory=bin\Release
-

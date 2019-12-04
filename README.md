@@ -1,39 +1,34 @@
 # ApiMultipartFormDataFormatter [![Build status](https://ci.appveyor.com/api/projects/status/cwyutunb3xh8clik?svg=true)](https://ci.appveyor.com/project/redplane/apimultipartformformatter)
+---
 
-## Features:
+## 1. Features:
 
  * Receives multipart/form-data request from client, parses information and bind to model.
+ * Deal with nested object in **ASP.NET Core Web API**
 
----
-## Implementation:
----
+## 2. Supported frameworks:
+- `.Net Framework` **>= 4.5.2**
+- `.Net Core` **>= 2.2.0**
 
-### WEB API 2 implementation:
-To use this custom media format in your WEB API 2 project. Please following these steps:
+## 2. Installation:
+- Install the lastest nuget package by using command `Install-Package ApiMultipartFormDataFormatter`
 
- * Install the lastest nuget package by using command `Install-Package ApiMultipartFormDataFormatter`.
- * Open WebApiConfig.cs file and add the following command: `config.Formatters.Add(new MultipartFormDataFormatter());`
+## 3. Implementation:
+- ### 3.1. WEB API 2 implementation:
  
- 	**WebApiConfig.cs:**
+ 	#### a. WebApiConfig.cs
  	```
     public static void Register(HttpConfiguration config)
     {
-        // Web API configuration and services
-
-        // Web API routes
-        config.MapHttpAttributeRoutes();
-
-        config.Routes.MapHttpRoute(
-            "DefaultApi",
-            "api/{controller}/{id}",
-            new {id = RouteParameter.Optional}
-        );
-
+        // ...
+        
         config.Formatters.Add(new MultipartFormDataFormatter());
+        
+        // ...
     }
     ``` 	
     
-    **In controller file**
+    #### b. Controller file
     ```
     [RoutePrefix("api/account")]
     public class ApiAccountController : ApiController
@@ -58,7 +53,7 @@ To use this custom media format in your WEB API 2 project. Please following thes
     }
     ```
     
- * Start posting a multipart/form-data to your WEB API 2 project and enjoy.
+    #### c.Start posting a multipart/form-data to your WEB API 2 project and enjoy.
  
  
 ### Note:

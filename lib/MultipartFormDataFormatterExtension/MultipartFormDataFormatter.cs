@@ -26,13 +26,6 @@ using MultipartFormDataFormatterExtension.Services.Interfaces;
 
 namespace MultipartFormDataFormatterExtension
 {
-    /// <summary>
-    ///     Handler for content disposition name analyzer.
-    /// </summary>
-    /// <param name="contentDispositionName"></param>
-    /// <returns></returns>
-    public delegate List<string> FindContentDispositionParametersHandler(string contentDispositionName);
-
 #if NETFRAMEWORK
     public class MultipartFormDataFormatter : MediaTypeFormatter
 #elif NETCOREAPP
@@ -59,7 +52,7 @@ namespace MultipartFormDataFormatterExtension
         /// <summary>
         ///     Interceptor for handling content disposition content name.
         /// </summary>
-        public FindContentDispositionParametersHandler FindContentDispositionParametersInterceptor { get; set; }
+        public Func<string, List<string>> ParamNameToPartsHandler { get; set; }
 
         #endregion
 
@@ -137,7 +130,7 @@ namespace MultipartFormDataFormatterExtension
                 {
                     // Find parameter from content deposition.
                     var contentParameter = httpContent.Headers.ContentDisposition.Name.Trim('"');
-                    var parameterParts = contentParameter.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
+                    var parameterParts = contentParameter.ToContentDispositionParameters(ParamNameToPartsHandler);
 
                     // Content is a parameter, not a file.
                     if (string.IsNullOrEmpty(httpContent.Headers.ContentDisposition.FileName))
@@ -210,7 +203,7 @@ namespace MultipartFormDataFormatterExtension
                     contentParameter = httpContent.Key.Trim();
 
                     var parameterParts =
-                        contentParameter.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
+                        contentParameter.ToContentDispositionParameters(ParamNameToPartsHandler);
                     await BuildRequestModelAsync(instance, parameterParts, httpContent.Value.ToString(),
                         multipartFormDataModelBinderServices);
                 }
@@ -229,7 +222,7 @@ namespace MultipartFormDataFormatterExtension
                             await fileContent.CopyToAsync(memoryStream);
 
                             var parameterParts =
-                                fileContent.Name.ToContentDispositionParameters(FindContentDispositionParametersInterceptor);
+                                fileContent.Name.ToContentDispositionParameters(ParamNameToPartsHandler);
 
                             var attachment = new HttpFile(
                                 fileContent.FileName.Trim('"'),

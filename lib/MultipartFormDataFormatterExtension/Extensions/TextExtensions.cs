@@ -22,7 +22,7 @@ namespace MultipartFormDataFormatterExtension.Extensions
         ///     Find content disposition parameters
         /// </summary>
         public static List<string> ToContentDispositionParameters(this string contentDispositionName,
-            FindContentDispositionParametersHandler interceptor)
+            Func<string, List<string>> interceptor)
         {
             if (interceptor == null)
                 return contentDispositionName.Replace("[", ",")
