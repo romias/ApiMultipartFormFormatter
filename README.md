@@ -5,18 +5,17 @@
 
  * Receives multipart/form-data request from client, parses information and bind to model.
  * Deal with nested object in **ASP.NET Core Web API**
-
-## 2. Supported frameworks:
-- `.Net Framework` **>= 4.5.2**
-- `.Net Core` **>= 2.2.0**
+ * Supported frameworks:
+    - `.Net Framework` **>= 4.5.2**
+    - `.Net Core` **>= 2.2.0**
 
 ## 2. Installation:
 - Install the lastest nuget package by using command `Install-Package ApiMultipartFormDataFormatter`
 
 ## 3. Implementation:
-- ### 3.1. WEB API 2 implementation:
+- ### 3.1. `WEB API 2 implementation`
  
- 	#### a. WebApiConfig.cs
+ 	- #### a. WebApiConfig.cs
  	```
     public static void Register(HttpConfiguration config)
     {
@@ -28,7 +27,7 @@
     }
     ``` 	
     
-    #### b. Controller file
+    - #### b. Controller file
     ```
     [RoutePrefix("api/account")]
     public class ApiAccountController : ApiController
@@ -53,7 +52,7 @@
     }
     ```
     
-    #### c.Start posting a multipart/form-data to your WEB API 2 project and enjoy.
+    - #### c.Start posting a multipart/form-data to your WEB API 2 project and enjoy.
  
  
 ### Note:
