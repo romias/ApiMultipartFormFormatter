@@ -2,10 +2,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-
-#elif NETSTANDARD
+using System.Web.Http;
+#elif NETCOREAPP
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,7 +18,6 @@ using System.Linq;
 
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web.Http;
 using MultipartFormDataFormatterExtension.Extensions;
 using MultipartFormDataFormatterExtension.Models;
 using MultipartFormDataFormatterExtension.Services.Implementations;
@@ -37,7 +35,7 @@ namespace MultipartFormDataFormatterExtension
 
 #if NETFRAMEWORK
     public class MultipartFormDataFormatter : MediaTypeFormatter
-#elif NETSTANDARD
+#elif NETCOREAPP
     public class MultipartFormDataFormatter : InputFormatter
 #endif
     {
@@ -74,7 +72,7 @@ namespace MultipartFormDataFormatterExtension
         /// <returns></returns>
 #if NETFRAMEWORK
         public override bool CanReadType(Type type)
-#elif NETSTANDARD
+#else
         protected override bool CanReadType(Type type)
 #endif
         {
@@ -123,6 +121,9 @@ namespace MultipartFormDataFormatterExtension
             var multipartFormDataModelBinderServices =
                 dependencyResolver.GetServices(typeof(IMultiPartFormDataModelBinderService)) as List<IMultiPartFormDataModelBinderService>;
 
+            if (multipartFormDataModelBinderServices == null)
+                multipartFormDataModelBinderServices = new List<IMultiPartFormDataModelBinderService>();
+            
             try
             {
                 // load multipart data into memory 
@@ -174,7 +175,7 @@ namespace MultipartFormDataFormatterExtension
             }
         }
 
-#elif NETSTANDARD
+#elif NETCOREAPP
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
@@ -190,6 +191,9 @@ namespace MultipartFormDataFormatterExtension
             // Get list of multipart form data binder service.
             var multipartFormDataModelBinderServices =
                 serviceProvider.GetServices<IMultiPartFormDataModelBinderService>()?.ToList();
+
+            if (multipartFormDataModelBinderServices == null)
+                multipartFormDataModelBinderServices = new List<IMultiPartFormDataModelBinderService>();
 
             try
             {

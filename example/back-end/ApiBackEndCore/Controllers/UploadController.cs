@@ -26,7 +26,7 @@ namespace ApiBackEndCore.Controllers
         
         #region Methods
         
-        [HttpPost]
+        [HttpPost("basic-upload")]
         public IEnumerable<string> UploadAsync(BasicUploadViewModel command)
         {
             return new[] {"Hello", "World"};

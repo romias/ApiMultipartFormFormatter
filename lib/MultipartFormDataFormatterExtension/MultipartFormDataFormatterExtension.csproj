@@ -1,22 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net452;netcoreapp2.2</TargetFrameworks>
+    </PropertyGroup>
 
- <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-	<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+        <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.2" />
+        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" />
+        <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.2" />
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-	<PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.2" />
-	<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.WebHost" Version="5.2.2" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Update="ApiMultiPartFormData.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net452'">
+        <DefineConstants>NETFRAMEWORK;NET452;NETFULL</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACE</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Update="ApiMultiPartFormData.nuspec">
+            <SubType>Designer</SubType>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.0" />
+    </ItemGroup>
 </Project>
